@@ -11,7 +11,41 @@ app.use(Cors())
 
 Mongoose.connect("mongodb://anaghaajidev:Anagha23@ac-agnsoij-shard-00-00.lk3iujt.mongodb.net:27017,ac-agnsoij-shard-00-01.lk3iujt.mongodb.net:27017,ac-agnsoij-shard-00-02.lk3iujt.mongodb.net:27017/blogapp_db?ssl=true&replicaSet=atlas-bjgzxl-shard-0&authSource=admin&appName=Cluster0")
 
+//signIn
+app.post("/signin",async(req,res)=>{
 
+    let input=req.body
+    let result=userModel.find({email:req.body.email}).then(
+        (items)=>{
+            if (items.length>0) {
+                
+                const passwordValidator=Bcrypt.compareSync(req.body.password,items[0].password)
+                if (passwordValidator) {
+                    jwt.sign({email:req.body.email},"blogApp",{expiresIn:"1d"},
+                        (error,token)=>{
+
+                            if (error) {
+                                res.json({"status":"Error","error":error})
+
+                            } else {
+                                res.json({"status":"Success","token":token,"userId":items[0]._id})
+
+                            }
+                        })
+
+
+                } else {
+                    res.json({"status":"Incorrect Password"})
+                }
+            } else {
+                res.json({"status":"Invalid Email ID"})
+            }
+        }
+    ).catch()
+})
+
+
+// signUp
 app.post("/signup",async(req,res)=>{
 
     let input=req.body
